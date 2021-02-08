@@ -1,0 +1,7 @@
+1-exuvia
+2-instar1
+3-instar2
+4-instar3
+5-instar4
+6-adulta
+7-ovo
