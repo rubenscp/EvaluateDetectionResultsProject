@@ -34,7 +34,8 @@ LINE_FEED = '\n'
 
 
 # evaluate detection results
-def evaluateDetectionResults(inputImagesDetectionsFullPath, inputImagesAnnotationsPath, evaluationPathAndFile):
+def evaluateDetectionResults(inputImagesDetectionsFullPath, inputImagesAnnotationsPath, evaluationPathAndFile,
+                             width, height):
     # removing and creating the evaluation file
     if os.path.exists(evaluationPathAndFile):
         os.remove(evaluationPathAndFile)
@@ -83,8 +84,8 @@ def evaluateDetectionResults(inputImagesDetectionsFullPath, inputImagesAnnotatio
         detectedObjectsList = getDetectedObjectsList(detectionLogFileName, imageName)
 
         # getting the list of annotated objects
-        annotatedObjectsList = getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName)
-
+        annotatedObjectsList = getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName, width, height)
+        
         # evaluating the results
         evaluateResultsOfImage(imageName, detectedObjectsList, annotatedObjectsList, evaluationPathAndFile)
 
@@ -250,7 +251,7 @@ def getDetectedObjectsList(detectionLogFileName, imageName):
 
 
 # getting the list of annotated objects
-def getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName):
+def getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName, width, height):
     # defining the annotated objects list
     annotatedObjectsList = []
 
@@ -286,7 +287,7 @@ def getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName):
 
         # creating a new bounding box instance
         annotatedBoundingBox = BoundingBox(0, 0, 0, 0, '')
-        annotatedBoundingBox.setYoloAnnotation(416, 416,
+        annotatedBoundingBox.setYoloAnnotation(width, height,
                                                colOfCentrePoint, linOfCentrePoint,
                                                widthOfCentrePoint, heightOfCentrePoint,
                                                0,
@@ -309,6 +310,9 @@ def getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName):
 def evaluateResultsOfImage(imageName, detectedObjectsList, annotatedObjectsList, evaluationPathAndFile):
     # initializing line
     line = ''
+
+    if (imageName == 'N132-exuvia-bbox-8-south'):
+        x = 0
 
     # writing the result of evaluation
     evaluationDetectionResultsFile = open(evaluationPathAndFile, 'a+')
@@ -521,18 +525,22 @@ def saveProcessingResults(trainValidTestDatasetsPath, fileName):
 # Main method
 # ###########################################
 if __name__ == '__main__':
-    # INPUT_DETECTION_PATH = 'E:/desenvolvimento/projetos/DoctoralProjects/EvaluateDetectionResultsProject/inputOutputData/input/detectionLog/'
+    IMAGES_DETECTIONS = 'Detection-22'
+    width = 128
+    height = 128
+
     INPUT_IMAGES_DETECTIONS_PATH = \
         'C:/Users/Rubens/Google Drive (rubens.castro@ufg.br)/DoctoralProjects/YOLOv4/Results/Detection/'
     INPUT_IMAGES_ANNOTATIONS_PATH = \
-        'E:/desenvolvimento/projetos/DoctoralProjects/EvaluateDetectionResultsProject/inputOutputData/input/imagesAnnotations/'
+        'E:/desenvolvimento/projetos/DoctoralProjects/EvaluateDetectionResultsProjectImages/' + \
+        IMAGES_DETECTIONS + \
+        '/input/test/'
     OUTPUT_EVALUATION_DETECTIONS_RESULTS_PATH = \
-        'E:/desenvolvimento/projetos/DoctoralProjects/EvaluateDetectionResultsProject/inputOutputData/output/'
+        'E:/desenvolvimento/projetos/DoctoralProjects/EvaluateDetectionResultsProjectImages/' + \
+        IMAGES_DETECTIONS + \
+        '/output/'
 
-    IMAGES_DETECTIONS = 'Detection-19'
     INPUT_IMAGES_DETECTIONS_FULL_PATH = INPUT_IMAGES_DETECTIONS_PATH + IMAGES_DETECTIONS + '/'
-
-
 
     # datetime object containing current date and time
     # now = datetime.now()
@@ -552,7 +560,9 @@ if __name__ == '__main__':
     # processing the annotated images
     evaluateDetectionResults(INPUT_IMAGES_DETECTIONS_FULL_PATH,
                              INPUT_IMAGES_ANNOTATIONS_PATH,
-                             evaluationPathAndFile)
+                             evaluationPathAndFile,
+                             width,
+                             height)
 
     # end of processing
     print('End of processing')
