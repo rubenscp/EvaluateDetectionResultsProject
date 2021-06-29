@@ -25,6 +25,12 @@ class ObjectClassEnum:
         if className == 'ovo':
             return 6
 
+        if className == 'instar1ou2':
+            return 7
+
+        if className == 'instar3ou4':
+            return 8
+
         return 99
 
     def getValueName(classId):
@@ -47,9 +53,12 @@ class ObjectClassEnum:
             return 'adulta'
 
         if classId == 6:
-            return 'exuvia'
+            return 'ovo'
 
         if classId == 7:
-            return 'ovo'
+            return 'instar1ou2'
+
+        if classId == 8:
+            return 'instar3ou4'
 
         return ''

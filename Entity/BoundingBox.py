@@ -1,6 +1,7 @@
 # BoundingBox Class
 from Entity.Pixel import Pixel
 
+
 class BoundingBox:
     def __init__(self, linPoint1=None, colPoint1=None, linPoint2=None, colPoint2=None, className='', confidence=0):
         self.linPoint1 = linPoint1
@@ -97,3 +98,7 @@ class BoundingBox:
             self.className = 'adulta'
         elif idClass == 6:
             self.className = 'ovo'
+        elif idClass == 7:
+            self.className = 'instar1ou2'
+        elif idClass == 8:
+            self.className = 'instar3ou4'

@@ -85,80 +85,9 @@ def evaluateDetectionResults(inputImagesDetectionsFullPath, inputImagesAnnotatio
 
         # getting the list of annotated objects
         annotatedObjectsList = getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName, width, height)
-        
+
         # evaluating the results
         evaluateResultsOfImage(imageName, detectedObjectsList, annotatedObjectsList, evaluationPathAndFile)
-
-    # close file
-    # evaluationDetectionResultsFile.close()
-
-
-# # evaluate detection results
-# def evaluateDetectionResults(logDectionPathAndFile, inputImagesAnnotationsPath, evaluationPathAndFile):
-#     # removing and creating the evaluation file
-#     if os.path.exists(evaluationPathAndFile):
-#         os.remove(evaluationPathAndFile)
-#
-#     # creating the evaluatin results file
-#     evaluationDetectionResultsFile = open(evaluationPathAndFile, 'a+')
-#
-#     # configuring header
-#     line = 'image name' \
-#            + ';annotated object class' \
-#            + ';detected object in the correct position and class' \
-#            + ';detected object in the correct position and diferent class' \
-#            + ';others objects' \
-#            + ';result' \
-#            + LINE_FEED
-#
-#     # write line
-#     evaluationDetectionResultsFile.write(line)
-#
-#     # close file
-#     evaluationDetectionResultsFile.close()
-#
-#     # open log detection file
-#     logDetectionFile = open(logDectionPathAndFile, "r")
-#
-#     # reading next line
-#     line = logDetectionFile.readline()
-#
-#     # processing the file
-#     while line != '':
-#
-#         # looking for image name (jpg)
-#         if line.lower().find('jpg') == -1 and line.lower().find('jpeg') == -1:
-#             line = logDetectionFile.readline()
-#             continue
-#
-#         # get jpeg position
-#         jpegPosition = -1
-#         jpegPosition = line.find('jpg')
-#         if jpegPosition == -1: jpegPosition = line.find('jpeg')
-#         if jpegPosition == -1: jpegPosition = line.find('JPG')
-#         if jpegPosition == -1: jpegPosition = line.find('JPEG')
-#
-#         # get only the image name
-#         imageName = line[5:jpegPosition - 1]
-#
-#         print('')
-#         print(imageName)
-#
-#         # getting the list of detected objects
-#         detectedObjectsList = getDetectedObjectsList(logDetectionFile, imageName)
-#
-#         # getting the list of annotated objects
-#         annotatedObjectsList = getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName)
-#
-#         # evaluating the results
-#         evaluateResultsOfImage(imageName, detectedObjectsList, annotatedObjectsList, evaluationPathAndFile)
-#
-#         # reading next line
-#         line = logDetectionFile.readline()
-#
-#     # close file
-#     logDetectionFile.close()
-#     evaluationDetectionResultsFile.close()
 
 
 # ###########################################
@@ -255,6 +184,9 @@ def getAnnotatedObjectsList(inputImagesAnnotationsPath, imageName, width, height
     # defining the annotated objects list
     annotatedObjectsList = []
 
+    if (imageName == 'N13-instar3ou4-bbox-4-center'):
+        x = 0
+
     # open annotation file
     imageAnnotationFileName = imageName + ".txt"
     imageAnnotationPathAndFileName = inputImagesAnnotationsPath + imageAnnotationFileName
@@ -311,7 +243,7 @@ def evaluateResultsOfImage(imageName, detectedObjectsList, annotatedObjectsList,
     # initializing line
     line = ''
 
-    if (imageName == 'N132-exuvia-bbox-8-south'):
+    if (imageName == 'N13-instar3ou4-bbox-4-center'):
         x = 0
 
     # writing the result of evaluation
@@ -357,11 +289,16 @@ def evaluateResultsOfImage(imageName, detectedObjectsList, annotatedObjectsList,
                         confidence = detectedObject.confidence
                         result = 'success'
                     else:
-                        detectedObjectInTheCorrectPositionAndDiferentClass = detectedObject.className
-                        result = 'failure'
+                        detectedObjectInTheCorrectPositionAndDiferentClass += detectedObject.className \
+                                                                              + " (" + str(detectedObject.confidence) \
+                                                                              + "%)" + '  '
+                        if result == '':
+                            result = 'failure'
                 else:
-                    othersDetectedObject += detectedObject.className + ' '
-                    result = 'failure'
+                    othersDetectedObject += detectedObject.className \
+                                            + " (" + str(detectedObject.confidence) + "%)" + '  '
+                    if result == '':
+                        result = 'failure'
 
         # evaluating if has any object detected
         if detectedObjectInTheCorrectPositionAndClass == '':
@@ -399,20 +336,6 @@ def checkLocationDectetedObject(annotatedObject, detectedObject):
                     and lin <= annotatedObject.linPoint2 and col <= annotatedObject.colPoint2
             ):
                 return True
-
-    # # evaluating intersection when detected object is in the northwest of the annotated object
-    # if (detectedObject.linPoint1 <= annotatedObject.linPoint1 and detectedObject.colPoint1 <= annotatedObject.colPoint1
-    #         and detectedObject.linPoint2 >= annotatedObject.linPoint1 and detectedObject.colPoint2 >= annotatedObject.colPoint1
-    #         and detectedObject.linPoint2 <= annotatedObject.linPoint2 and detectedObject.colPoint2 >= annotatedObject.colPoint2
-    # ):
-    #     hasIntersection = True
-    #
-    # # evaluating intersection when detected object is in the northeast of the annotated object
-    # if (detectedObject.linPoint1 >= annotatedObject.linPoint1 and detectedObject.colPoint2 >= annotatedObject.colPoint2
-    #         and detectedObject.linPoint2 <= annotatedObject.linPoint1 and detectedObject.colPoint1 <= annotatedObject.colPoint2
-    #         and detectedObject.linPoint2 >= annotatedObject.linPoint2 and detectedObject.colPoint1 >= annotatedObject.colPoint1
-    # ):
-    #     hasIntersection = True
 
     # returning result
     return False
@@ -476,24 +399,24 @@ def moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatase
 
 
 # process images
-def organizeImagesByClassName(croppedImagesPath, trainValidTestDatasetsPath,
-                              percentageOfTrainImages, percentageOfValidImages, percentageOfTestImages, className):
-    # setting the full path name
-    croppedImagesClassNamePath = croppedImagesPath + className + '/'
-
-    # get the total number of images by class
-    numberOfTotalImages = len(list(pathlib.Path(croppedImagesClassNamePath).glob('*.jpg')))
-    images = list(pathlib.Path(croppedImagesClassNamePath).glob('*.jpg'))
-
-    # calculating the number of images used in train, valid and test datasets
-    numberOfTrainImages = round(numberOfTotalImages * percentageOfTrainImages / 100.0)
-    numberOfValidImages = round(numberOfTotalImages * percentageOfValidImages / 100.0)
-    numberOfTestImages = numberOfTotalImages - numberOfTrainImages - numberOfValidImages
-
-    # moving to specific folders
-    moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatasetsPath, numberOfTrainImages, 'train/')
-    moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatasetsPath, numberOfValidImages, 'valid/')
-    moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatasetsPath, numberOfTestImages, 'test/')
+# def organizeImagesByClassName(croppedImagesPath, trainValidTestDatasetsPath,
+#                               percentageOfTrainImages, percentageOfValidImages, percentageOfTestImages, className):
+#     # setting the full path name
+#     croppedImagesClassNamePath = croppedImagesPath + className + '/'
+#
+#     # get the total number of images by class
+#     numberOfTotalImages = len(list(pathlib.Path(croppedImagesClassNamePath).glob('*.jpg')))
+#     images = list(pathlib.Path(croppedImagesClassNamePath).glob('*.jpg'))
+#
+#     # calculating the number of images used in train, valid and test datasets
+#     numberOfTrainImages = round(numberOfTotalImages * percentageOfTrainImages / 100.0)
+#     numberOfValidImages = round(numberOfTotalImages * percentageOfValidImages / 100.0)
+#     numberOfTestImages = numberOfTotalImages - numberOfTrainImages - numberOfValidImages
+#
+#     # moving to specific folders
+#     moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatasetsPath, numberOfTrainImages, 'train/')
+#     moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatasetsPath, numberOfValidImages, 'valid/')
+#     moveImageAndAnnotationFiles(croppedImagesClassNamePath, trainValidTestDatasetsPath, numberOfTestImages, 'test/')
 
 
 # save results of processing
@@ -525,7 +448,7 @@ def saveProcessingResults(trainValidTestDatasetsPath, fileName):
 # Main method
 # ###########################################
 if __name__ == '__main__':
-    IMAGES_DETECTIONS = 'Detection-22'
+    IMAGES_DETECTIONS = 'Detection-41'
     width = 128
     height = 128
 
